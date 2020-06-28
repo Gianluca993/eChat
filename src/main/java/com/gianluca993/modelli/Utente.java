@@ -16,6 +16,10 @@ import org.bson.BsonValue;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
+import com.mongodb.MongoClient;
+
+import dao.UtenteDao;
+
 public class Utente {
 
 	private ObjectId id;
@@ -43,6 +47,14 @@ public class Utente {
 		followers = new HashMap<>();
 		this.dataIscrizione = LocalDateTime.now();
 	}
+	public Utente(Document d) {
+		setId(d.getObjectId("_id"));
+		setNickname(d.getString("nickname"));
+		setPassword(d.getString("password"));
+		setAmici(d);
+		setFollowers(d);
+	}
+
 	public ObjectId getId() {
 		return id;
 	}
@@ -76,6 +88,10 @@ public class Utente {
 	public void setDataIscrizione(LocalDateTime dataIscrizione) {
 		this.dataIscrizione = dataIscrizione;
 	}
+	public void setDataIscrizione(Document d) {
+		MongoClient mc = new MongoClient();
+		setDataIscrizione(LocalDateTime.parse(d.getDate("dataIscrizione").toString()));
+	}
 	public LocalDateTime getUltimoAccesso() {
 		return ultimoAccesso;
 	}
@@ -97,6 +113,15 @@ public class Utente {
 	}
 	public void setAmici(Map<ObjectId, Utente> amici) {
 		this.amici = amici;
+	}
+	public void setAmici(Document d) {
+		Map<ObjectId, Utente> fr = new HashMap<>();
+		List<ObjectId> u = (List<ObjectId>) d.get("utenti");
+		MongoClient mc = new MongoClient();
+		for(ObjectId id : u) {
+			fr.put(id, new Utente(UtenteDao.getUtente(mc, id)));
+		}
+		setAmici(fr);
 	}
 	public void addAmico(Utente u) {
 		if(u != null) {
@@ -137,6 +162,15 @@ public class Utente {
 	}
 	public void setFollowers(Map<ObjectId, Utente> followers) {
 		this.followers = followers;
+	}
+	private void setFollowers(Document d) {
+		Map<ObjectId, Utente> fr = new HashMap<>();
+		List<ObjectId> u = (List<ObjectId>) d.get("utenti");
+		MongoClient mc = new MongoClient();
+		for(ObjectId id : u) {
+			fr.put(id, new Utente(UtenteDao.getUtente(mc, id)));
+		}
+		setFollowers(fr);
 	}
 	public void addFollower(Utente f) {
 		if(f != null) {

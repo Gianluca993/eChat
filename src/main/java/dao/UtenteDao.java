@@ -19,7 +19,6 @@ public class UtenteDao {
 		MongoCollection<Document> mcoll = md.getCollection("utenti");
 		mcoll.insertOne(u.utenteToDocument());
 		u.setId(getIdUtente(mc, u.getEmail()));
-//		mc.close();
 	}
 	private static ObjectId getIdUtente(MongoClient mc, String email) {
 		MongoDatabase md = mc.getDatabase("eChat");
@@ -29,11 +28,11 @@ public class UtenteDao {
 		FindIterable<Document> fI = mcoll.find(query);
 		return fI.first().getObjectId("_id");
 	}
-	public static Document getUtente(MongoClient mc, String id) {
+	public static Document getUtente(MongoClient mc, ObjectId id) {
 		MongoDatabase md = mc.getDatabase("eChat");
 		MongoCollection<Document> mcoll = md.getCollection("utenti");
 		BasicDBObject query = new BasicDBObject();
-	    query.put("_id", new ObjectId(id));
+	    query.put("_id", id);
 		FindIterable<Document> fI = mcoll.find(query);		
 		return fI.first();
 	}	
@@ -60,5 +59,12 @@ public class UtenteDao {
 	    query.put("_id", id);
 	    mcoll.findOneAndReplace(Filters.eq("_id", id), newUtente);
 		return newUtente;
+	}
+	public static void deleteUtente(MongoClient mc, ObjectId id) {
+		MongoDatabase md = mc.getDatabase("eChat");
+		MongoCollection<Document> mcoll = md.getCollection("utenti");
+		BasicDBObject query = new BasicDBObject();
+	    query.put("_id", id);
+	    mcoll.findOneAndDelete(Filters.eq("_id", id));
 	}
 }

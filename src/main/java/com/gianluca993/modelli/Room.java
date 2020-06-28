@@ -4,27 +4,53 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.json.bind.annotation.JsonbCreator;
+import javax.json.bind.annotation.JsonbProperty;
+
+import org.bson.Document;
+import org.bson.types.ObjectId;
+
 public class Room {
 
-	private String id;
+	private ObjectId id;
 	private String nome, 
 				password;
 	private File img;
-	private boolean hasPass;
+	private boolean hasPass = false;
 	private List<Utente> partecipanti;
 	private List<Messaggio> messaggi;
 	
-	public Room(String nome) {
-		this.nome = nome;
-		hasPass = false;
+	@JsonbCreator
+	public Room(@JsonbProperty("nome") String nome) {
+		setNome(nome);
+		partecipanti = new ArrayList<>();
+		messaggi = new ArrayList<>();
+	}
+	
+	@JsonbCreator
+	public Room(@JsonbProperty("nome") String nome,
+				@JsonbProperty("password") String password) {
+		setNome(nome);
+		setPassword(password);
+		setHasPass(true);
+		partecipanti = new ArrayList<>();
+		messaggi = new ArrayList<>();
+	}
+	public Room(Document d) {
+		setId(d.getObjectId("_id"));
+		setNome(d.getString("nome"));
+		if(d.getString("password") != null) {
+			setPassword(d.getString("password"));
+			setHasPass(true);
+		}
 		partecipanti = new ArrayList<>();
 		messaggi = new ArrayList<>();
 	}
 
-	public String getId() {
+	public ObjectId getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(ObjectId id) {
 		this.id = id;
 	}
 	public String getNome() {
@@ -68,6 +94,12 @@ public class Room {
 		this.messaggi = messaggi;
 	}
 	
-	
+	public Document roomToDocument() {
+		Document d = new Document()
+				.append("nome", getNome());
+		if(this.password != null)
+				d.append("password", getPassword());
+		return d;
+	}
 	
 }
