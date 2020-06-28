@@ -4,29 +4,32 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 import javax.json.bind.annotation.JsonbCreator;
 import javax.json.bind.annotation.JsonbProperty;
 
+import org.bson.BsonArray;
+import org.bson.BsonDocument;
+import org.bson.BsonValue;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 
 public class Utente {
 
-	private String id;
+	private ObjectId id;
 	private String nickname, 
 	email, 
 	password;
 	private LocalDateTime dataIscrizione;
 	private LocalDateTime ultimoAccesso;
-	private Map<String, Utente> amici;
+	private Map<ObjectId, Utente> amici;
 	private boolean emailConfirmed;
 	private List<Post> posts;
 	private File profilePic;
 	private String status;
-	private Map<String, Utente> followers;
+	private Map<ObjectId, Utente> followers;
 
 	@JsonbCreator
 	public Utente(@JsonbProperty("nickname") String nickname, 
@@ -36,12 +39,14 @@ public class Utente {
 		setEmail(email);
 		setPassword(password);
 		amici = new HashMap<>();
+		posts = new ArrayList<>();
+		followers = new HashMap<>();
 		this.dataIscrizione = LocalDateTime.now();
 	}
-	public String getId() {
+	public ObjectId getId() {
 		return id;
 	}
-	public void setId(String id) {
+	public void setId(ObjectId id) {
 		this.id = id;
 	}
 	public String getNickname() {
@@ -77,17 +82,20 @@ public class Utente {
 	public void setUltimoAccesso(LocalDateTime ultimoAccesso) {
 		this.ultimoAccesso = ultimoAccesso;
 	}
-	public Map<String, Utente> getAmici() {
+	public Map<ObjectId, Utente> getAmici() {
 		return amici;
 	}
-	public Document getDocumentAmici() {
-		Document d = new Document();
-		for(String key : amici.keySet()) {
-			d.append(key, amici.get(key).utenteToDocument());
+	public List<ObjectId> getDocumentAmici() {
+		Document doc = new Document();
+		List<ObjectId> oid = new ArrayList<>();
+		int i = 0;
+		for(ObjectId key : amici.keySet()) {
+			oid.add(amici.get(key).getId());			
 		}
-		return d;
+		doc.append("utenti", oid);
+		return oid;
 	}
-	public void setAmici(Map<String, Utente> amici) {
+	public void setAmici(Map<ObjectId, Utente> amici) {
 		this.amici = amici;
 	}
 	public void addAmico(Utente u) {
@@ -124,10 +132,10 @@ public class Utente {
 	public void setStatus(String status) {
 		this.status = status;
 	}
-	public Map<String, Utente> getFollowers() {
+	public Map<ObjectId, Utente> getFollowers() {
 		return followers;
 	}
-	public void setFollowers(Map<String, Utente> followers) {
+	public void setFollowers(Map<ObjectId, Utente> followers) {
 		this.followers = followers;
 	}
 	public void addFollower(Utente f) {
@@ -137,18 +145,23 @@ public class Utente {
 	}
 	public Document utenteToDocument() {
 		Document d = new Document();
-		d.append("id", getId())
-		.append("nickname", getNickname())
+		d.append("nickname", getNickname())
 		.append("email", getEmail())
 		.append("password", getPassword())
-		.append("amici", getDocumentAmici())
 		.append("dataIscrizione", getDataIscrizione())
-		.append("ultimoAccesso", getUltimoAccesso())
-		.append("emailConfirmed", isEmailConfirmed())
-		.append("posts", getPosts())
-		.append("profilePic", getProfilePic())
-		.append("status", getStatus())
-		.append("followers", getFollowers());
+		.append("emailConfirmed", isEmailConfirmed());
+		if(ultimoAccesso != null)
+			d.append("ultimoAccesso", getUltimoAccesso());		
+		if(profilePic != null)
+			d.append("profilePic", getProfilePic());
+		if(status != null)
+			d.append("status", getStatus());
+		if(amici.size() != 0)
+			d.append("amici", getDocumentAmici());
+		if(followers.size() != 0)
+			d.append("followers", getFollowers());
+		if(posts.size() != 0)
+			d.append("posts", getPosts());
 		return d;
 	}
 	@Override

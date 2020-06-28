@@ -6,6 +6,7 @@ import org.bson.types.ObjectId;
 import com.gianluca993.modelli.Utente;
 import com.mongodb.client.FindIterable;
 import com.mongodb.BasicDBObject;
+import com.mongodb.DBCursor;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -15,10 +16,19 @@ public class UtenteDao {
 
 	public static void upUtente(MongoClient mc, Utente u) {
 		MongoDatabase md = mc.getDatabase("eChat");
-		MongoCollection<Document> mcoll = md.getCollection("Utente");
+		MongoCollection<Document> mcoll = md.getCollection("utenti");
 		mcoll.insertOne(u.utenteToDocument());
-		mc.close();
-	}	
+		u.setId(getIdUtente(mc, u.getEmail()));
+//		mc.close();
+	}
+	private static ObjectId getIdUtente(MongoClient mc, String email) {
+		MongoDatabase md = mc.getDatabase("eChat");
+		MongoCollection<Document> mcoll = md.getCollection("utenti");
+		BasicDBObject query = new BasicDBObject();
+	    query.put("email", email);
+		FindIterable<Document> fI = mcoll.find(query);
+		return fI.first().getObjectId("_id");
+	}
 	public static Document getUtente(MongoClient mc, String id) {
 		MongoDatabase md = mc.getDatabase("eChat");
 		MongoCollection<Document> mcoll = md.getCollection("utenti");
@@ -42,5 +52,13 @@ public class UtenteDao {
 	    query.put("nickname", name);
 		FindIterable<Document> fI = mcoll.find(query);		
 		return fI.first();
+	}
+	public static Document editUtente(MongoClient mc, ObjectId id, Document newUtente) {
+		MongoDatabase md = mc.getDatabase("eChat");
+		MongoCollection<Document> mcoll = md.getCollection("utenti");
+		BasicDBObject query = new BasicDBObject();
+	    query.put("_id", id);
+	    mcoll.findOneAndReplace(Filters.eq("_id", id), newUtente);
+		return newUtente;
 	}
 }

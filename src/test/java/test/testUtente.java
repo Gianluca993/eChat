@@ -11,10 +11,17 @@ public class testUtente {
 	public static void main(String[] args) {
 		
 		Utente u = new Utente("abra", "cadabra@", "alakazamm");
-		u.addAmico(new Utente("sano", "donato@", "shabadabam"));
-		u.addAmico(new Utente("dioa", "canaro@", "sdoganato"));
+		Utente b = new Utente("sano", "donato@", "shabadabam");
+		Utente c = new Utente("dioa", "canaro@", "sdoganato");
+		MongoClient mc = MongoConnection.connetti();
+		UtenteDao.upUtente(mc, u);
+		UtenteDao.upUtente(mc, b);
+		UtenteDao.upUtente(mc, c);
+		u.addAmico(b);
+		u.addAmico(c);
+		UtenteDao.editUtente(mc, u.getId(), u.utenteToDocument());
 		System.out.println(u.utenteToDocument().toString());
 
-		System.out.println(UtenteDao.getUtente(MongoConnection.connetti(), "5ef7c7f55cb5d42d7cbc4fc0"));
+		
 	}
 }
