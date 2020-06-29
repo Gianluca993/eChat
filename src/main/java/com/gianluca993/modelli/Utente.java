@@ -115,13 +115,15 @@ public class Utente {
 		this.amici = amici;
 	}
 	public void setAmici(Document d) {
-		Map<ObjectId, Utente> fr = new HashMap<>();
-		List<ObjectId> u = (List<ObjectId>) d.get("utenti");
-		MongoClient mc = new MongoClient();
-		for(ObjectId id : u) {
-			fr.put(id, new Utente(UtenteDao.getUtente(mc, id)));
+		if(d.containsKey("utenti")) {
+			Map<ObjectId, Utente> fr = new HashMap<>();
+			List<ObjectId> u = (List<ObjectId>) d.get("utenti");
+			MongoClient mc = new MongoClient();
+			for(ObjectId id : u) {
+				fr.put(id, new Utente(UtenteDao.getUtente(mc, id)));
+			}
+			setAmici(fr);
 		}
-		setAmici(fr);
 	}
 	public void addAmico(Utente u) {
 		if(u != null) {
@@ -164,13 +166,15 @@ public class Utente {
 		this.followers = followers;
 	}
 	private void setFollowers(Document d) {
-		Map<ObjectId, Utente> fr = new HashMap<>();
-		List<ObjectId> u = (List<ObjectId>) d.get("utenti");
-		MongoClient mc = new MongoClient();
-		for(ObjectId id : u) {
-			fr.put(id, new Utente(UtenteDao.getUtente(mc, id)));
+		if(d.containsKey("utenti")) {
+			Map<ObjectId, Utente> fr = new HashMap<>();
+			List<ObjectId> u = (List<ObjectId>) d.get("utenti");
+			MongoClient mc = new MongoClient();
+			for(ObjectId id : u) {
+				fr.put(id, new Utente(UtenteDao.getUtente(mc, id)));
+			}
+			setFollowers(fr);
 		}
-		setFollowers(fr);
 	}
 	public void addFollower(Utente f) {
 		if(f != null) {
